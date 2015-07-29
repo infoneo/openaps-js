@@ -81,20 +81,22 @@ function maxBasalLookup() {
     profile.max_basal =pumpsettings_data.maxBasal;
 }
 
+/* Return average 30-min basal (from now)*/
+
 function ThirtyMinBasalFromNow(basalprofile, currentpumptime){
-    var currentptime = new Date(currentpumptime);
-    var current_min = currentptime.getHours() * 60 + currentptime.getMinutes();
+var currentptime = new Date(currentpumptime);
+var current_min = currentptime.getHours() * 60 + currentptime.getMinutes();
 
-    basalprofile.sort(function(a, b) {return parseFloat(a.minutes) - parseFloat(b.minutes);});
+basalprofile.sort(function(a, b) {return parseFloat(a.minutes) - parseFloat(b.minutes);});
 
-    for (var i = 0; i < basalprofile.length - 1; i++) {
-        
-        var toprange = basalprofile[i + 1].minutes;
-        if (basalprofile.length - 1){toprange = 1440;}
-        
-        if ((current_min >= basalprofile[i].minutes) && (current_min < toprange)) {
+  for (var i = 0; i < basalprofile.length;i++) {
+     var bolusstart = basalprofile[i].minutes;
+     if (i == (basalprofile.length-1)){ var bolusend = 1440}
+     else {var bolusend = basalprofile[i + 1].minutes;}
 
-            if (i = basalprofile.length-1){
+     if ((current_min >= bolusstart) && (current_min < bolusend)) {
+            
+            if (i == (basalprofile.length-1)){
                //it's for the last basal of a day
                var basalNowRate = basalprofile[i].rate;
                var basalNowLenght = 1440 - basalprofile[i].minutes;
@@ -122,13 +124,13 @@ function ThirtyMinBasalFromNow(basalprofile, currentpumptime){
            //console.log('Current basal rate: ' + basalNowRate + ', duration:' + basalNowLenght + ', minutes left: '+ basalNowMinLeft);
            //console.log('Next basal rate: ' + basalNextRate + ', duration: ' + basalNextLeght + ', minutes in next basal: ' + basalNexMinLeft);
            var calculatedthirtminbasal = (basalNowRate/basalNowLenght)*basalNowMinLeft + basalNextRate/basalNextLeght * basalNexMinLeft; 
-           //console.log(calculatedthirtminbasal);
            profile.thirtymin_basal=Math.round((Math.round(calculatedthirtminbasal / 0.05) * 0.05)*100)/100; // round up to 0.05
            break;
         }
+
   }
-    
 }
+
 
 if (!module.parent) {
     
